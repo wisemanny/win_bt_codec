@@ -1,0 +1,295 @@
+1. Wait and connect BT devices:
+
+
+Listening for events... Press Ctrl+C to stop.
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000200000000
+  A2dpStandardCodecId: ff
+  A2dpVendorId: d7000000
+  A2dpVendorCodecId: 2400
+  AcceptorStreamEndPointID: 07
+  BTDeviceAddress: f479f4d2967c0000
+      Codec Name: aptX HD
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000200000000
+  A2dpStandardCodecId: ff
+  A2dpVendorId: 4f000000
+  A2dpVendorCodecId: 0100
+  AcceptorStreamEndPointID: 05
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000200000000
+  A2dpStandardCodecId: 02
+  A2dpVendorId: 00000000
+  A2dpVendorCodecId: 0000
+  AcceptorStreamEndPointID: 03
+  BTDeviceAddress: f479f4d2967c0000
+-------------------------------------
+>  Codec Name: MPEG-2,4 (aka AAC)
+-------------------------------------
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000200000000
+  A2dpStandardCodecId: ff
+  A2dpVendorId: 0a000000
+  A2dpVendorCodecId: 0601
+  AcceptorStreamEndPointID: 15
+  BTDeviceAddress: f479f4d2967c0000
+      Codec Name: The CSR True Wireless Stereo v3 Codec ID for aptX
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000200000000
+  A2dpStandardCodecId: ff
+  A2dpVendorId: 0a000000
+  A2dpVendorCodecId: 0401
+  AcceptorStreamEndPointID: 13
+  BTDeviceAddress: f479f4d2967c0000
+      Codec Name: The CSR True Wireless Stereo v3 Codec ID for AAC
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000200000000
+  A2dpStandardCodecId: ff
+  A2dpVendorId: 0a000000
+  A2dpVendorCodecId: 0301
+  AcceptorStreamEndPointID: 11
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000200000000
+  A2dpStandardCodecId: 00
+  A2dpVendorId: 00000000
+  A2dpVendorCodecId: 0000
+  AcceptorStreamEndPointID: 01
+  BTDeviceAddress: f479f4d2967c0000
+-------------------------------------
+>  Codec Name: SBC
+-------------------------------------
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000300000000
+  AvdtpActivity: 12000000
+  AcceptorStreamEndPointID: 03
+  InitiatorStreamEndPointID: 37
+  ResultCode: 00
+  A2dpStandardCodecId: 02
+  A2dpVendorId: 00000000
+  A2dpVendorCodecId: 0000
+  Sample Rate: 80bb0000
+  ChannelCount: 02000000
+  BTDeviceAddressRemote: f479f4d2967c0000
+-------------------------------------
+>  Codec Name: MPEG-2,4 (aka AAC)
+-------------------------------------
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000300000000
+  A2dpRemoteDelayReportDurationInMs: c800
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000300000000
+  A2dpIsConnected: 00000000
+  A2dpIsSepOpen: 01000000
+  A2dpIsAvrcpRegistered: 00000000
+  A2dpIsSink: 00000000
+  A2dpIsStreaming: 00000000
+  A2dpSupportsAbsoluteVolume: 01000000
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000300000000
+  A2dpIsConnected: 01000000
+  A2dpIsSepOpen: 01000000
+  A2dpIsAvrcpRegistered: 01000000
+  A2dpIsSink: 00000000
+  A2dpIsStreaming: 00000000
+  A2dpSupportsAbsoluteVolume: 01000000
+  BTDeviceAddress: f479f4d2967c0000
+
+
+
+2. Start playing audio
+
+
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0000000300000000
+  StatusErrorCode: 00000000
+  IsKsPinCreated: 00000000
+  FormatTag: feff
+  SampleRate: 80bb000080bb000080bb0000
+  BitDepth: 10001000000010000000
+  ChannelCount: 020002000000
+  ChannelMask: 03000000
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000300000000
+  AudioSessionId: a16c3dc9202a0800583fb0c9202adc01
+  L2capChannelHandleSessionId: e00a6a6f8ca4ffff
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0000000300000000
+  StatusErrorCode: 00000000
+  DurationInMilliseconds: 0000000000000000
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0000000300000000
+  TransitionFromState: 00
+  TransitionToState: 01
+  StatusErrorCode: 00000000
+  TransitionDurationMs: 0000000000000000
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0000000300000000
+  TransitionFromState: 01
+  TransitionToState: 02
+  StatusErrorCode: 00000000
+  TransitionDurationMs: 0000000000000000
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0000000300000000
+  TransitionFromState: 02
+  TransitionToState: 03
+  StatusErrorCode: 00000000
+  TransitionDurationMs: 0000000000000000
+  BTDeviceAddress: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags: 0008000300000000
+  L2capChannelHandleSessionId: e00a6a6f8ca4ffff
+  A2dpIsSink: 00000000
+  BTDeviceAddress: f479f4d2967c0000
+
+
+
+3. Switch from another audio source to this one
+
+
+
+Listening for events... Press Ctrl+C to stop.
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0008000300000000
+  L2capChannelHandleSessionId [8]: e00a6a6f8ca4ffff
+  DurationInMilliseconds [8]: cd5b000000000000
+  A2dpStandardCodecId [1]: 02
+  A2dpVendorId [4]: 00000000
+  A2dpVendorCodecId [2]: 0000
+  A2dpIsSink [4]: 00000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0000000300000000
+  TransitionFromState [1]: 03
+  TransitionToState [1]: 02
+  StatusErrorCode [4]: 00000000
+  TransitionDurationMs [8]: 0b00000000000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0000000300000000
+  TransitionFromState [1]: 02
+  TransitionToState [1]: 01
+  StatusErrorCode [4]: 00000000
+  TransitionDurationMs [8]: 0000000000000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0000000300000000
+  TransitionFromState [1]: 01
+  TransitionToState [1]: 00
+  StatusErrorCode [4]: 00000000
+  TransitionDurationMs [8]: 0000000000000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0000000300000000
+  StatusErrorCode [4]: 00000000
+  IsKsPinCreated [4]: 00000000
+  FormatTag [2]: feff
+  SampleRate [12]: 80bb000080bb000080bb0000
+  BitDepth [10]: 10001000000010000000
+  ChannelCount [6]: 020002000000
+  ChannelMask [4]: 03000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0008000300000000
+  AudioSessionId [16]: a16c3dc9202a04008b29d5c9202adc01
+  L2capChannelHandleSessionId [8]: e00a6a6f8ca4ffff
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0000000300000000
+  StatusErrorCode [4]: 00000000
+  DurationInMilliseconds [8]: 0000000000000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0000000300000000
+  TransitionFromState [1]: 00
+  TransitionToState [1]: 01
+  StatusErrorCode [4]: 00000000
+  TransitionDurationMs [8]: 0000000000000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0000000300000000
+  TransitionFromState [1]: 01
+  TransitionToState [1]: 02
+  StatusErrorCode [4]: 00000000
+  TransitionDurationMs [8]: 0000000000000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0000000300000000
+  TransitionFromState [1]: 02
+  TransitionToState [1]: 03
+  StatusErrorCode [4]: 00000000
+  TransitionDurationMs [8]: 0000000000000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+--------------------------------------
+Event ID: 0
+Provider GUID:
+  PartA_PrivTags [8]: 0008000300000000
+  L2capChannelHandleSessionId [8]: e00a6a6f8ca4ffff
+  A2dpIsSink [4]: 00000000
+  BTDeviceAddress [8]: f479f4d2967c0000
+
+
