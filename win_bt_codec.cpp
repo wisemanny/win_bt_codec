@@ -1,22 +1,26 @@
+#include <cwchar>
 #include <windows.h>
 
-#include <cstdint>
 #include <evntcons.h>
 #include <evntrace.h>
 #include <stdio.h>
 #include <tdh.h>
 #include <wchar.h>
 
-#pragma comment(lib, "tdh.lib")
+#include <optional>
 
+#pragma comment(lib, "tdh.lib")
 
 // The process and data is taken from this article
 // https://helgeklein.com/blog/how-to-check-which-bluetooth-a2dp-audio-codec-is-used-on-windows/
 
+// Set to true to print events data
+const bool TRACE_EVENTS = false;
+
 struct CodecData {
-  const uint8_t A2dpStandardCodecId;
-  const uint32_t A2dpVendorId;
-  const uint16_t A2dpVendorCodecId;
+  const BYTE A2dpStandardCodecId;
+  const DWORD A2dpVendorId;
+  const WORD A2dpVendorCodecId;
   const WCHAR *Name;
 };
 
@@ -25,7 +29,7 @@ const CodecData CODECS[] = {
     {0x01, 0, 0, L"MPEG-1,2 (aka MP3)"},
     {0x02, 0, 0, L"MPEG-2,4 (aka AAC)"},
     {0x03, 0, 0, L"ATRAC"},
-    {0xFF, 0x004F, 0x0, L"aptX"},
+    {0xFF, 0x004F, 0x01, L"aptX"},
     {0xFF, 0x00D7, 0x24, L"aptX HD"},
     {0xFF, 0x000A, 0x02, L"aptX Low Latency"},
     {0xFF, 0x00D7, 0x02, L"aptX Low Latency"},
@@ -34,12 +38,32 @@ const CodecData CODECS[] = {
     {0xFF, 0x0075, 0x0102, L"Samsung HD"},
     {0xFF, 0x0075, 0x0103, L"Samsung Scalable Codec"},
     {0xFF, 0x053A, 0x484C, L"Savitech LHDC"},
+    {0xFF, 0x000A, 0x0103, L"Qualcomm specific aptX version"},
     {0xFF, 0x000A, 0x0104, L"The CSR True Wireless Stereo v3 Codec ID for AAC"},
     {0xFF, 0x000A, 0x0105, L"The CSR True Wireless Stereo v3 Codec ID for MP3"},
     {0xFF, 0x000A, 0x0106,
      L"The CSR True Wireless Stereo v3 Codec ID for aptX"}};
 
+struct A2dpEventData {
+  std::optional<BYTE> a2dpStandardCodecId;
+  std::optional<DWORD> a2dpVendorId;
+  std::optional<WORD> a2dpVendorCodecId;
+  std::optional<DWORD> AvdtpActivity;
+  std::optional<WORD> ResultCode;
+  std::optional<DWORD> SampleRate;
+  std::optional<DWORD> ChannelCount;
+  std::optional<BYTE> AcceptorStreamEndPointID;
+  std::optional<BYTE> InitiatorStreamEndPointID;
+};
+
+enum AvdtpActivityFlags {
+  CODEC_PICKED_BIT = 0b00010000 // SEEMS LIKE CODED WAS PICKED??
+                                // I saw 0x12 and 0x14 so picked this bit
+                                // who knows
+};
+
 // The GUID for the provider we want to trace
+// This one is Microsoft.Windows.Bluetooth.BthA2dp
 static GUID ProviderGuid = {0x8776ad1e,
                             0x5022,
                             0x4451,
@@ -81,6 +105,115 @@ BOOL WINAPI CtrlCHandler(DWORD fdwCtrlType) {
   }
 }
 
+void TraceEventInfo(const PEVENT_RECORD pEvent, const PTRACE_EVENT_INFO pInfo) {
+  DWORD status = ERROR_SUCCESS;
+
+  // Print general event information
+  wprintf(L"--------------------------------------\n");
+  wprintf(L"Event ID: %u\n", pEvent->EventHeader.EventDescriptor.Id);
+  wprintf(L"Provider GUID: ");
+  for (int i = 0; i < 8; i++) {
+    // wprintf(L"%02x", pEvent->EventHeader.ProviderId.Data4[i]);
+  }
+  wprintf(L"\n");
+
+  // Iterate through the properties of the event
+  for (ULONG i = 0; i < pInfo->TopLevelPropertyCount; i++) {
+    PROPERTY_DATA_DESCRIPTOR descriptor;
+    descriptor.PropertyName =
+        (ULONGLONG)((PBYTE)pInfo + pInfo->EventPropertyInfoArray[i].NameOffset);
+    descriptor.ArrayIndex = 0;
+
+    // Get the size of the property data
+    ULONG propertySize = 0;
+    status = TdhGetPropertySize(pEvent, 0, NULL, 1, &descriptor, &propertySize);
+    if (status != ERROR_SUCCESS) {
+      continue;
+    }
+
+    // Allocate memory for the property data
+    PBYTE pPropertyData = (PBYTE)malloc(propertySize);
+    if (pPropertyData == NULL) {
+      continue;
+    }
+
+    // Get the property data
+    status = TdhGetProperty(pEvent, 0, NULL, 1, &descriptor, propertySize,
+                            pPropertyData);
+    if (status == ERROR_SUCCESS) {
+      // wprintf(L"Property size: %d\n", propertySize);
+      wprintf(L"  %s [%d]: ", (PWSTR)descriptor.PropertyName, propertySize);
+      // Otherwise, print the raw hex bytes
+      for (ULONG k = 0; k < propertySize; k++) {
+        wprintf(L"%02x", pPropertyData[k]);
+      }
+      wprintf(L"\n");
+    }
+    free(pPropertyData);
+  }
+}
+
+const WCHAR *GetCodecName(const A2dpEventData &eventData) {
+  // Find coded if codec data was specified
+  if (eventData.a2dpStandardCodecId) {
+    // wprintf(L"Look for codec with %d, %d, %d\n", a2dpStandardCodecId,
+    // a2dpVendorId, a2dpStandardCodecId);
+    for (const auto &codec : CODECS) {
+      // if a set of a2dpStandardCodecId is in 0,1,2 or 4 then
+      // we should not check other fields
+      if (eventData.a2dpStandardCodecId == 0x00 ||
+          eventData.a2dpStandardCodecId == 0x01 ||
+          eventData.a2dpStandardCodecId == 0x02 ||
+          eventData.a2dpStandardCodecId == 0x04) {
+        if (codec.A2dpStandardCodecId == eventData.a2dpStandardCodecId) {
+          return codec.Name;
+        }
+      } else if (codec.A2dpStandardCodecId == eventData.a2dpStandardCodecId &&
+                 codec.A2dpVendorId == eventData.a2dpVendorId &&
+                 codec.A2dpVendorCodecId == eventData.a2dpVendorCodecId) {
+        return codec.Name;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+// Returns true if all OK or false if error happened during processing
+bool ProcessEventData(const A2dpEventData &eventData) {
+  // Here is asbolute guess based on the events I saw
+  // 1. If AcceptorStreamEndPointID is defined but InitiatorStreamEndPointID
+  // and codec data is defined, seems like that is receiver transmits its list
+  // of supported codecs
+  if (eventData.AcceptorStreamEndPointID &&
+      !eventData.InitiatorStreamEndPointID && eventData.a2dpStandardCodecId) {
+    const WCHAR *codecName = GetCodecName(eventData);
+    if (codecName != nullptr) {
+      wprintf(L"> Received supported codec: %s\n", codecName);
+    } else {
+      wprintf(L"ERROR: Unknown codec\n");
+      return false;
+    }
+  }
+
+  // 2. If AcceptorStreamEndPointID and InitiatorStreamEndPointID are defined
+  // and if AvdtpActivity is defined and equal to 0x12, seems like
+  // that means that codec was selected
+  if (eventData.AcceptorStreamEndPointID &&
+      eventData.InitiatorStreamEndPointID && eventData.AvdtpActivity &&
+      eventData.AvdtpActivity.value() & AvdtpActivityFlags::CODEC_PICKED_BIT) {
+    const WCHAR *codecName = GetCodecName(eventData);
+    if (codecName != nullptr) {
+      wprintf(L"# Selected codec: %s\n", codecName);
+    } else {
+      wprintf(L"ERROR: Unknown codec\n");
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // Callback function that processes each event received from the ETW session
 void WINAPI ProcessEvent(PEVENT_RECORD pEvent) {
   DWORD status = ERROR_SUCCESS;
@@ -109,13 +242,9 @@ void WINAPI ProcessEvent(PEVENT_RECORD pEvent) {
     return;
   }
 
-  // Print general event information
-  wprintf(L"Event ID: %u\n", pEvent->EventHeader.EventDescriptor.Id);
-  wprintf(L"Provider GUID: ");
-  for (int i = 0; i < 8; i++) {
-  //wprintf(L"%02x", pEvent->EventHeader.ProviderId.Data4[i]);
+  if constexpr (TRACE_EVENTS) {
+    TraceEventInfo(pEvent, pInfo);
   }
-  wprintf(L"\n");
 
   // Sizes of the data
   // Property size: 1
@@ -124,9 +253,9 @@ void WINAPI ProcessEvent(PEVENT_RECORD pEvent) {
   // A2dpVendorId: 00000000
   // Property size: 2
   // A2dpVendorCodecId: 0000
-  int8_t a2dpStandardCodecId = -1;
-  int32_t a2dpVendorId = -1;
-  int16_t a2dpVendorCodecId = -1;
+  // Sample Rate: 80bb0000
+  // ChannelCount: 02000000
+  A2dpEventData eventData;
 
   // Iterate through the properties of the event
   for (ULONG i = 0; i < pInfo->TopLevelPropertyCount; i++) {
@@ -153,54 +282,34 @@ void WINAPI ProcessEvent(PEVENT_RECORD pEvent) {
                             pPropertyData);
     if (status == ERROR_SUCCESS) {
       if (wcscmp((PWSTR)descriptor.PropertyName, L"A2dpStandardCodecId") == 0) {
-        a2dpStandardCodecId = *(int32_t *)pPropertyData;
+        eventData.a2dpStandardCodecId = *(BYTE *)pPropertyData;
       } else if (wcscmp((PWSTR)descriptor.PropertyName, L"A2dpVendorId") == 0) {
-        a2dpVendorId = *(int32_t *)pPropertyData;
+        eventData.a2dpVendorId = *(DWORD *)pPropertyData;
       } else if (wcscmp((PWSTR)descriptor.PropertyName, L"A2dpVendorCodecId") ==
                  0) {
-        a2dpVendorCodecId = *(int16_t *)pPropertyData;
+        eventData.a2dpVendorCodecId = *(WORD *)pPropertyData;
+      } else if (wcscmp((PWSTR)descriptor.PropertyName, L"AvdtpActivity") ==
+                 0) {
+        eventData.AvdtpActivity = *(DWORD *)pPropertyData;
+      } else if (wcscmp((PWSTR)descriptor.PropertyName, L"ResultCode") == 0) {
+        eventData.ResultCode = *(WORD *)pPropertyData;
+      } else if (wcscmp((PWSTR)descriptor.PropertyName, L"Sample Rate") == 0) {
+        eventData.SampleRate = *(DWORD *)pPropertyData;
+      } else if (wcscmp((PWSTR)descriptor.PropertyName, L"ChannelCount") == 0) {
+        eventData.ChannelCount = *(DWORD *)pPropertyData;
+      } else if (wcscmp((PWSTR)descriptor.PropertyName,
+                        L"AcceptorStreamEndPointID") == 0) {
+        eventData.AcceptorStreamEndPointID = *(BYTE *)pPropertyData;
+      } else if (wcscmp((PWSTR)descriptor.PropertyName,
+                        L"InitiatorStreamEndPointID") == 0) {
+        eventData.InitiatorStreamEndPointID = *(BYTE *)pPropertyData;
       }
-
-      //wprintf(L"Property size: %d\n", propertySize);
-      wprintf(L"  %s: ", (PWSTR)descriptor.PropertyName);
-      // If the property is AvdtpActivity or ResultCode, print its integer
-      // value
-      if (wcscmp((PWSTR)descriptor.PropertyName, L"AvdtpActivity") == 0 ||
-          wcscmp((PWSTR)descriptor.PropertyName, L"ResultCode") == 0) {
-        wprintf(L"%d", *(int *)pPropertyData);
-      } else {
-        // Otherwise, print the raw hex bytes
-        for (ULONG k = 0; k < propertySize; k++) {
-          wprintf(L"%02x", pPropertyData[k]);
-        }
-      }
-      wprintf(L"\n");
     }
     free(pPropertyData);
   }
 
-
-  // Find coded if codec data was specified
-  if (a2dpStandardCodecId != -1) {
-    //wprintf(L"Look for codec with %d, %d, %d\n", a2dpStandardCodecId,
-            //a2dpVendorId, a2dpStandardCodecId);
-    for (const auto &codec : CODECS) {
-      // if a set of a2dpStandardCodecId is in 0,1,2 or 4 then
-      // we should not check other fields
-      if (a2dpStandardCodecId == 0x00 || a2dpStandardCodecId == 0x01 ||
-          a2dpStandardCodecId == 0x02 || a2dpStandardCodecId == 0x04) {
-        if (codec.A2dpStandardCodecId == a2dpStandardCodecId) {
-          wprintf(L"-------------------------------------\n");
-          wprintf(L">  Codec Name: %s\n", codec.Name);
-          wprintf(L"-------------------------------------\n");
-        }
-      } else if (codec.A2dpStandardCodecId == a2dpStandardCodecId &&
-                 codec.A2dpVendorId == a2dpVendorId &&
-                 codec.A2dpVendorCodecId == a2dpVendorCodecId) {
-        wprintf(L"      Codec Name: %s\n", codec.Name);
-        break;
-      }
-    }
+  if (!ProcessEventData(eventData)) {
+    TraceEventInfo(pEvent, pInfo);
   }
 
   if (pInfo) {
@@ -280,6 +389,7 @@ int main() {
   }
 
   wprintf(L"Listening for events... Press Ctrl+C to stop.\n");
+  wprintf(L"Now please connect the bluetooth device to the computer\n");
   // Start processing traces
   ProcessTrace(&hTrace, 1, 0, 0);
 
