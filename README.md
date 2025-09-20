@@ -33,3 +33,10 @@ Now please connect the bluetooth device to the computer
 # Selected codec: MPEG-2,4 (aka AAC)
 Ctrl+C received, stopping trace...
 ```
+# How to compile
+
+I use make, nut the command line is very simple and uses cl.exe with a library
+
+# How to debug
+
+Change the TRACE_EVENT to true and it will print events properties
