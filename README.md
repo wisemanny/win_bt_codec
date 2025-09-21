@@ -37,9 +37,9 @@ Ctrl+C received, stopping trace...
 
 I use make, nut the command line is very simple and uses cl.exe with a library
 
-# How to debug
+# How to trace
 
-Change the TRACE_EVENT to true and it will print events properties
+Use --trace or -t to print all events
 
 # Gemini
 
