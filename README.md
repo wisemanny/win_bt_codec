@@ -40,3 +40,7 @@ I use make, nut the command line is very simple and uses cl.exe with a library
 # How to debug
 
 Change the TRACE_EVENT to true and it will print events properties
+
+# Gemini
+
+Used to build first version with main, session creation and even handling loop
