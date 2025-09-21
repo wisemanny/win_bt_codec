@@ -15,7 +15,7 @@
 // https://helgeklein.com/blog/how-to-check-which-bluetooth-a2dp-audio-codec-is-used-on-windows/
 
 // Set to true to print events data
-const bool TRACE_EVENTS = false;
+bool TRACE_EVENTS = false;
 
 struct CodecData {
   const BYTE A2dpStandardCodecId;
@@ -25,10 +25,10 @@ struct CodecData {
 };
 
 const CodecData CODECS[] = {
-    {0, 0, 0, L"SBC"},
-    {0x01, 0, 0, L"MPEG-1,2 (aka MP3)"},
-    {0x02, 0, 0, L"MPEG-2,4 (aka AAC)"},
-    {0x03, 0, 0, L"ATRAC"},
+    {0x0, 0x0, 0x0, L"SBC"},
+    {0x01, 0x0, 0x0, L"MPEG-1,2 (aka MP3)"},
+    {0x02, 0x0, 0x0, L"MPEG-2,4 (aka AAC)"},
+    {0x03, 0x0, 0x0, L"ATRAC"},
     {0xFF, 0x004F, 0x01, L"aptX"},
     {0xFF, 0x00D7, 0x24, L"aptX HD"},
     {0xFF, 0x000A, 0x02, L"aptX Low Latency"},
@@ -181,7 +181,7 @@ const WCHAR *GetCodecName(const A2dpEventData &eventData) {
 
 // Returns true if all OK or false if error happened during processing
 bool ProcessEventData(const A2dpEventData &eventData) {
-  // Here is asbolute guess based on the events I saw
+  // Here is absolute guess based on the events I saw
   // 1. If AcceptorStreamEndPointID is defined but InitiatorStreamEndPointID
   // and codec data is defined, seems like that is receiver transmits its list
   // of supported codecs
@@ -242,7 +242,7 @@ void WINAPI ProcessEvent(PEVENT_RECORD pEvent) {
     return;
   }
 
-  if constexpr (TRACE_EVENTS) {
+  if (TRACE_EVENTS) {
     TraceEventInfo(pEvent, pInfo);
   }
 
@@ -317,7 +317,22 @@ void WINAPI ProcessEvent(PEVENT_RECORD pEvent) {
   }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+
+  // Very simple cmd args parsing
+  if (argc == 2) {
+    const char *param = argv[1];
+    if (strcmp(param, "--help") == 0 || strcmp(param, "-h") == 0) {
+      wprintf(L"Help:\n");
+      wprintf(L"   -h|--help to print help\n");
+      wprintf(L"   -t|--trace to print all ETW events\n");
+      return 1;
+    } else if (strcmp(param, "--trace") == 0 || strcmp(param, "-t") == 0) {
+      wprintf(L"Print all events for tracing purposes\n");
+      TRACE_EVENTS = true;
+    }
+  }
+
   // Allocate memory for the session properties
   ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) +
                      (wcslen(sessionName) + 1) * sizeof(WCHAR);
@@ -389,7 +404,12 @@ int main() {
   }
 
   wprintf(L"Listening for events... Press Ctrl+C to stop.\n");
-  wprintf(L"Now please connect the bluetooth device to the computer\n");
+  wprintf(L"Now please connect the Bluetooth device to the computer.\n");
+  wprintf(L"Note: this app uses internal Windows messages and analysis is "
+          L"based on guess\n");
+  wprintf(L"      so results may be not accurate.");
+  wprintf(L"\n");
+
   // Start processing traces
   ProcessTrace(&hTrace, 1, 0, 0);
 
