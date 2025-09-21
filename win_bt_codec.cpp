@@ -1,3 +1,25 @@
+// MIT License
+//
+// Copyright (c) 2025 The win_bt_codec project authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <cwchar>
 #include <windows.h>
 
@@ -328,7 +350,7 @@ int main(int argc, char *argv[]) {
       wprintf(L"   -t|--trace to print all ETW events\n");
       return 1;
     } else if (strcmp(param, "--trace") == 0 || strcmp(param, "-t") == 0) {
-      wprintf(L"Print all events for tracing purposes\n");
+      wprintf(L"Trace: Print all events for tracing purposes\n");
       TRACE_EVENTS = true;
     }
   }
@@ -405,10 +427,8 @@ int main(int argc, char *argv[]) {
 
   wprintf(L"Listening for events... Press Ctrl+C to stop.\n");
   wprintf(L"Now please connect the Bluetooth device to the computer.\n");
-  wprintf(L"Note: this app uses internal Windows messages and analysis is "
-          L"based on guess\n");
-  wprintf(L"      so results may be not accurate.");
-  wprintf(L"\n");
+  wprintf(L"Note: this app uses internal Windows messages and analysis is\n"
+          L"      based on guess. So results may be not accurate.\n\n");
 
   // Start processing traces
   ProcessTrace(&hTrace, 1, 0, 0);
