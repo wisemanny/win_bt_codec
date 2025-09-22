@@ -46,11 +46,11 @@ Interface Path:         \\?\BTHENUM#{0000110b-0000-1000-8000-00805f9b34fb}_VID&0
 
 In the code, I see that Windows uses this GUID for such values (I also added how they store it, to see the size):
 
-DEVPKEY_Bluetooth_ConfiguredCodec - saved as vector with variable length
-DEVPKEY_Bluetooth_LocalControllerSupportedCodecs  - saved as vector with variable length
-DEVPKEY_Bluetooth_RemoteSupportedCodecs - saved as vector with variable length
-DEVPKEY_Bluetooth_IsAvdtpConnected - size 1
-DEVPKEY_Bluetooth_StreamDisposition  - size 4
+1. DEVPKEY_Bluetooth_ConfiguredCodec - saved as vector with variable length
+2. DEVPKEY_Bluetooth_LocalControllerSupportedCodecs  - saved as vector with variable length
+3. DEVPKEY_Bluetooth_RemoteSupportedCodecs - saved as vector with variable length
+4. DEVPKEY_Bluetooth_IsAvdtpConnected - size 1
+5. DEVPKEY_Bluetooth_StreamDisposition  - size 4
 
 And indeed, if I take one of the values, I can decode it into the codecs supported by the speaker:
 
@@ -63,6 +63,7 @@ And indeed, if I take one of the values, I can decode it into the codecs support
 
 Here is how it can be split into the list of codecs:
 
+```
 FF  0xD7 0024  aptX HD
 FF  0x4F 0001  aptX
 02             MPEG-2,4 (aka AAC)  <--- Currently used, seems like other value of 2 is index
@@ -70,3 +71,4 @@ FF 0xA 0x0106  CSR aptX
 FF 0xA 0x0104  CSR AAC
 FF 0xA 0x0103  Qualcomm
 00
+```
