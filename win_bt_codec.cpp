@@ -31,8 +31,6 @@
 
 #include <optional>
 
-#pragma comment(lib, "tdh.lib")
-
 // The process and data is taken from this article
 // https://helgeklein.com/blog/how-to-check-which-bluetooth-a2dp-audio-codec-is-used-on-windows/
 
@@ -78,6 +76,9 @@ struct A2dpEventData {
     std::optional<BYTE> InitiatorStreamEndPointID;
 };
 
+// These vaklues were reversed from btha2dp.sys on Windows 11 build 26100
+// and I am not sure if this going to stay the same in new builds.
+// I explained the process in the events.md file
 enum AvdtpActivity {
     Abort_Cfm = 0x2e,
     Abort_Ind = 0x2f,
@@ -97,13 +98,12 @@ enum AvdtpActivity {
     SetConfiguration_Ind_1 = 0x13, // in the same func it goes 0x13 and then
                                    // 0x14
     SetConfiguration_Ind_2 = 0x14,
-    Reconfigure_Ind_1 = 0x1c, // Same as above, it goes 0x1c and then 0x1b
-    Reconfigure_Ind_2 = 0x1b,
 
     Open_Cfm = 0x1e,
     Open_Ind = 0x1f,
     Reconfigure_Cfm = 0x1a,
-    Reconfigure_Ind = 0x1b,
+    Reconfigure_Ind_1 = 0x1c, // Same as above, it goes 0x1c and then 0x1b
+    Reconfigure_Ind_2 = 0x1b,
     Start_Cfm = 0x22,
     Start_Ind = 0x24,
     Suspend_Cfm = 0x2a,
@@ -117,10 +117,80 @@ enum AvdtpActivity {
     RequestStreamOpen = 9,
 
     SendReconfigurationRequest = 0x19,
-    // CODEC_PICKED_BIT = 0b00010000 // SEEMS LIKE CODED WAS PICKED??
-    //  I saw 0x12 and 0x14 so picked this bit
-    //  who knows
 };
+
+const WCHAR *AvdtpActivityToString(AvdtpActivity activity) {
+    switch (activity) {
+    case Abort_Cfm:
+        return L"Abort_Cfm";
+    case Abort_Ind:
+        return L"Abort_Ind";
+    case Close_Cfm:
+        return L"Close_Cfm";
+    case Close_Ind:
+        return L"Close_Ind";
+    case Connect_Cfm:
+        return L"Connect_Cfm";
+    case Connect_Ind:
+        return L"Connect_Ind";
+    case Disconnect_Cfm:
+        return L"Disconnect_Cfm";
+    case Disconnect_Ind:
+        return L"Disconnect_Ind";
+    case Discover_Cfm:
+        return L"Discover_Cfm";
+    case Discover_Ind:
+        return L"Discover_Ind";
+    case GetCapabilities_Cfm:
+        return L"GetCapabilities_Cfm";
+    case GetCapabilities_ind:
+        return L"GetCapabilities_ind";
+    case GetConfiguration_Cfm:
+        return L"GetConfiguration_Cfm";
+    case GetConfiguration_Ind:
+        return L"GetConfiguration_Ind";
+    case SetConfiguration_Cfm:
+        return L"SetConfiguration_Cfm";
+    case SetConfiguration_Ind_1:
+        return L"SetConfiguration_Ind_1";
+    case SetConfiguration_Ind_2:
+        return L"SetConfiguration_Ind_2";
+    case Reconfigure_Ind_1:
+        return L"Reconfigure_Ind_1";
+    case Reconfigure_Ind_2:
+        return L"Reconfigure_Ind_2";
+    case Open_Cfm:
+        return L"Open_Cfm";
+    case Open_Ind:
+        return L"Open_Ind";
+    case Reconfigure_Cfm:
+        return L"Reconfigure_Cfm";
+    case Start_Cfm:
+        return L"Start_Cfm";
+    case Start_Ind:
+        return L"Start_Ind";
+    case Suspend_Cfm:
+        return L"Suspend_Cfm";
+    case Suspend_Ind:
+        return L"Suspend_Ind";
+    case AbortStream:
+        return L"AbortStream";
+    case EnterNewStreamingState:
+        return L"EnterNewStreamingState";
+    case FindNextSepAndGepCaps:
+        return L"FindNextSepAndGepCaps";
+    case RequestOpenMediaChannel:
+        return L"RequestOpenMediaChannel";
+    case RequestStreamClose:
+        return L"RequestStreamClose";
+    case RequestStreamOpen:
+        return L"RequestStreamOpen";
+    case SendReconfigurationRequest:
+        return L"SendReconfigurationRequest";
+    default:
+        return L"Unknown";
+    }
+}
 
 // The GUID for the provider we want to trace
 // This one is Microsoft.Windows.Bluetooth.BthA2dp
@@ -172,11 +242,11 @@ void TraceEventInfo(const PEVENT_RECORD pEvent, const PTRACE_EVENT_INFO pInfo) {
     // Print general event information
     wprintf(L"--------------------------------------\n");
     wprintf(L"Event ID: %u\n", pEvent->EventHeader.EventDescriptor.Id);
-    wprintf(L"Provider GUID: ");
-    for (int i = 0; i < 8; i++) {
+    //wprintf(L"Provider GUID: ");
+    //for (int i = 0; i < 8; i++) {
         // wprintf(L"%02x", pEvent->EventHeader.ProviderId.Data4[i]);
-    }
-    wprintf(L"\n");
+    //}
+    //wprintf(L"\n");
 
     // Iterate through the properties of the event
     for (ULONG i = 0; i < pInfo->TopLevelPropertyCount; i++) {
@@ -211,9 +281,17 @@ void TraceEventInfo(const PEVENT_RECORD pEvent, const PTRACE_EVENT_INFO pInfo) {
             for (ULONG k = 0; k < propertySize; k++) {
                 wprintf(L"%02x", pPropertyData[k]);
             }
+
+            if (wcscmp((PWSTR)descriptor.PropertyName, L"AvdtpActivity") == 0) {
+                AvdtpActivity activityValue =
+                    static_cast<AvdtpActivity>(*(DWORD *)pPropertyData);
+                auto activity = AvdtpActivityToString(activityValue);
+                wprintf(L"     [%s]", activity);
+            }
+
             wprintf(L"\n");
+            free(pPropertyData);
         }
-        free(pPropertyData);
     }
 }
 
@@ -249,9 +327,9 @@ const WCHAR *GetCodecName(const A2dpEventData &eventData) {
 // Returns true if all OK or false if error happened during processing
 bool ProcessEventData(const A2dpEventData &eventData) {
     // Here is absolute guess based on the events I saw
-    // 1. If AcceptorStreamEndPointID is defined but InitiatorStreamEndPointID
-    // and codec data is defined, seems like that is receiver transmits its list
-    // of supported codecs
+    // 1. If AcceptorStreamEndPointID is defined but
+    // InitiatorStreamEndPointID and codec data is defined, seems like that
+    // is receiver transmits its list of supported codecs
     if (eventData.AcceptorStreamEndPointID &&
         !eventData.InitiatorStreamEndPointID && eventData.a2dpStandardCodecId) {
         const WCHAR *codecName = GetCodecName(eventData);
@@ -263,8 +341,8 @@ bool ProcessEventData(const A2dpEventData &eventData) {
         }
     }
 
-    // 2. If AcceptorStreamEndPointID and InitiatorStreamEndPointID are defined
-    // and if AvdtpActivity is defined and equal to 0x12, seems like
+    // 2. If AcceptorStreamEndPointID and InitiatorStreamEndPointID are
+    // defined and if AvdtpActivity is defined and equal to 0x12, seems like
     // that means that codec was selected
     if (eventData.AcceptorStreamEndPointID &&
         eventData.InitiatorStreamEndPointID && eventData.AvdtpActivity &&
@@ -409,8 +487,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Allocate memory for the session properties
-    ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) +
-                       (wcslen(sessionName) + 1) * sizeof(WCHAR);
+    const size_t bufferSize = sizeof(EVENT_TRACE_PROPERTIES) +
+                              (wcslen(sessionName) + 1) * sizeof(WCHAR);
     pSessionProperties = (EVENT_TRACE_PROPERTIES *)malloc(bufferSize);
     if (pSessionProperties == NULL) {
         wprintf(L"Unable to allocate memory for properties\n");
@@ -419,7 +497,7 @@ int main(int argc, char *argv[]) {
 
     // Zero out the memory and set the session properties
     ZeroMemory(pSessionProperties, bufferSize);
-    pSessionProperties->Wnode.BufferSize = bufferSize;
+    pSessionProperties->Wnode.BufferSize = (ULONG)bufferSize;
     pSessionProperties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
     pSessionProperties->Wnode.ClientContext = 1; // Use QPC for timestamp
     pSessionProperties->Wnode.Guid = ProviderGuid;
