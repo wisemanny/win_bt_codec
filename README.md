@@ -35,7 +35,7 @@ Ctrl+C received, stopping trace...
 ```
 # How to compile
 
-I use make, nut the command line is very simple and uses cl.exe with a library
+Use cmake
 
 # How to trace
 
