@@ -291,5 +291,3 @@ Provider GUID:
   L2capChannelHandleSessionId [8]: e00a6a6f8ca4ffff
   A2dpIsSink [4]: 00000000
   BTDeviceAddress [8]: f479f4d2967c0000
-
-

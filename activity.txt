@@ -1,0 +1,44 @@
+LastActivity values (Windows 11 26100.xxx). Fastest way to get them is to open in disassembler (I used Ghidra),
+load PDB, find function SetLastActivity and look for its callers. There find calls to SetLastActivity with the values.
+
+Abort_Cfm 0x2e
+Abort_Ind 0x2f
+Close_Cfm 0x26
+Close_Ind 0x27
+Connect_Cfm 0x2
+Connect_Ind 0x3
+Disconnect_Cfm 0x6
+Disconnect_Ind 0x7
+Discover_Cfm 10
+Discover_Ind 0xb
+GetCapabilities_Cfm 0xe
+GetCapabilities_ind 0xf
+GetConfiguration_Cfm 0x16
+GetConfiguration_Ind 0x17
+
+SetConfiguration_Ind 0x14
+Reconfigure_Ind 0x1c or 0x1b
+
+Open_Cfm 0x1e
+Open_Ind 0x1f
+Reconfigure_Cfm 0x1a
+Reconfigure_Ind 0x1b
+SetConfiguration_Cfm 0x12
+SetConfiguration_Ind 0x13
+Start_Cfm 0x22
+Start_Ind 0x24
+Suspend_Cfm 0x2a
+Suspend_Cfm 0x2c
+
+AbortStream 0x2d
+EnterNewStreamingState 0x29
+FindNextSepAndGepCaps 0xd
+RequestOpenMediaChannel 0x1d
+RequestStreamClose 0x25
+RequestStreamOpen 9
+
+SendReconfigurationRequest 0x19
+
+
+
+
